@@ -43,15 +43,33 @@ print('CAREFULLY Connect Power to ESC. Be warned that it may spark. DO NOT get y
 print('Press enter when finished.')
 input('CAREFULLY Connect Power to ESC. Be warned that it may spark. DO NOT get your fingers in the way!!!')
 
-time.sleep(5)
-for t in range(0, 100):
-    PERCENT = PERCENT - 1
-    print(PERCENT, '%')
-    throttle()
-    time.sleep(0.3)
+while True:
 
+    if keyboard.is_pressed('up_arrow'):
+        if PERCENT == 0:
+            for t in range(0, 100):
+                PERCENT = PERCENT + 1
+                print(PERCENT, '%')
+                throttle()
+                time.sleep(0.01)
+    
+    elif keyboard.is_pressed('down_arrow'):
+        if PERCENT == 100:
+            for t in range(0, 100):
+                PERCENT = PERCENT - 1
+                print(PERCENT, '%')
+                throttle()
+                time.sleep(0.01)
+    
+    elif keyboard.is_pressed('esc'): 
+        dP = 5
+        PERCENT=0
+        throttle()
+        print('Quitting Script Now!')
+        break
 
 print('Finished! Please power down the UAV, close the interactive window, and switch to MONO_ESC_CONTROL.py to test motor function.')
+
 
 
 # %%
