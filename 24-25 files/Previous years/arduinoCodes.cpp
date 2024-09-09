@@ -1,6 +1,8 @@
 #include <Wire.h>
 #include <Adafruit_MCP4725.h>
 
+// WE ARE MISSING THE TWO HEADER FILES: CAN'T RUN THIS CODE W/O THEM
+
 
 #define DAC_ADDRESS 0x62  // Default I2C address of the MCP4725 DAC
 #define MOTOR_PIN 9       // Example PWM pin connected to the motor controller
