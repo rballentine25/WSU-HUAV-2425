@@ -1,9 +1,8 @@
 #include <Wire.h>
 #include <Adafruit_MCP4725.h>
 
-// WE ARE MISSING THE TWO HEADER FILES: CAN'T RUN THIS CODE W/O THEM
-// try running on Arduino IDE on lab laptop-- looks like both headers are arduino 
-// libraries, but i can't figure out how many libraries i would have to download w/o the IDE yet
+// as of right now this only works in the Arduino IDE bc of the Adafruit library
+// if i can a) download the Arduino IDE or b) figure out to load it into VScode, i can run it on my own laptop
 
 
 #define DAC_ADDRESS 0x62  // Default I2C address of the MCP4725 DAC
