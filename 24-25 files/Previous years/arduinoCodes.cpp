@@ -46,7 +46,8 @@ for (int voltage = 0; voltage <= 2000; voltage += 50) {
 void loop() {
 
  // If the duration has not been reached, stay at 5V
- if(int voltage = 2000) {
+ // this code is always true because the if condition is assigning voltage = 2000?
+ if(int voltage == 2000) {
    Serial.println("Staying at 4V");
    Serial.println(voltage);
 
