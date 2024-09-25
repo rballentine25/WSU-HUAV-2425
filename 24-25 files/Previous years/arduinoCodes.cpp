@@ -13,47 +13,50 @@ Adafruit_MCP4725 dac;
 
 
 void setup() {
-// serial? connected output device?
+// Serial initializes serial comm between Arduino and connected device (9600 bits/sec)
  Serial.begin(9600);
 
 // begin method: begins hardware and checks the DAC was found
-// takes in the I2C of the dac, which defaults to 0x62
-// also takes in the I2C TwoWire object, which defaults to &Wire
  dac.begin(DAC_ADDRESS);
 
 // setVoltage(output, writeEEPROM, i2c_frequency) is a bool return method that 
 // sets output voltage to a fraction of source vref. 
-// output is 12bit value for DAC input to output voltage (uint16_t)
-// writeEEPROM: if true, 'output' will also be written to MCP4725's internal memory
-// (DAC will retain curr volt after power down)
-// i2c_freq sets I2C clock when writing to DAC, default set to 400KHz
  dac.setVoltage(0, false);  // Set DAC voltage to 0V initially
 
-
+// sets pin 9 as output
  pinMode(MOTOR_PIN, OUTPUT);
 
-
 // analogWrite: controls speed of motor
-// incrementally increases voltage up to 2000, with 50ms delay in between each step
+// incrementally increases voltage up to 2000 (~4V), with 50ms delay in between each step
+// (should take 2s in total)
 for (int voltage = 0; voltage <= 2000; voltage += 50) {
+   // first param specifies new voltage setting, second is for whether this setting is stored
+   // on DAC's memory (DAC retains value after Arduino power down if true)
    dac.setVoltage(voltage, false);
+
+   // analogWrite generates a PWM signal on the specified pin using map() function to scale
+   // DAC voltage to PWM signal between 0-130 (max is 255)
    analogWrite(MOTOR_PIN, map(voltage, 0, 2000, 0, 130));
    delay(50);  // Adjust the delay as needed for your application
  }
 }
 
 // voltage should be set to 2000 by this point
+// loop code is the only thing that keeps executing after initial setup is completed
 void loop() {
 
- // If the duration has not been reached, stay at 5V
+ // If the duration has not been reached, stay at 4V
  // this code is always true because the if condition is assigning voltage = 2000?
+ // should prob be if(voltage == 2000)
  if(int voltage == 2000) {
    Serial.println("Staying at 4V");
    Serial.println(voltage);
 
+   // reassigns dac voltage to 2000- not really necessary?
    dac.setVoltage(voltage, false);
    Serial.println(voltage);
 
+  // maintains motor speed
    analogWrite(MOTOR_PIN, 130);
    Serial.println("Start Delay");
 

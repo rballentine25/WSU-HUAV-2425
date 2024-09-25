@@ -1,0 +1,37 @@
+all arduino programs require two functions:
+void setup() and void loop()
+
+setup() is used to initialized variables 
+and whatever settings that only need to be set once
+setup() runs once after each powerup or reset of board
+
+pinMode() and Serial.begin() are typical methods 
+to see within setup code
+
+dac.begin(): 
+begins hardware and checks the DAC was found
+takes in the I2C of the dac, which defaults to 0x62
+also takes in the I2C TwoWire object, which defaults to &Wire
+
+dac.setVoltage():
+setVoltage(output, writeEEPROM, i2c_frequency) is a bool return method that 
+sets output voltage to a fraction of source vref. 
+output is 12bit value for DAC input to output voltage (uint16_t)
+writeEEPROM: if true, 'output' will also be written to MCP4725's internal memory
+(DAC will retain curr volt after power down)
+i2c_freq sets I2C clock when writing to DAC, default set to 400KHz
+
+analogWrite(MOTOR_PIN, map(voltage, 0, 2000, 0, 130));
+analogWrite generates a PWM signal on the specified pin
+takes in pin and a value between 0 and 255, where 255 is full speed
+
+map() is an arduino function that converts the rang of one set of values
+to another range. here converts DAC voltage into PWM values
+5 args: x, in_min, in_max, out_min, out_max
+x is the input value to be mapped. in params are ranges of the input value
+(here 0 to 2000 from the DAC voltage), out is min/max of converted value
+here, PWM range is 0 to 130 (remember PWM standard range is 0-255)
+map() scales the voltage input value to PWM output value
+
+serial.println should be sending all output to 
+serial monitor (tools -> serial monitor to open)
