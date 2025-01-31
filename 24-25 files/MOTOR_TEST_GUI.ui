@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>907</width>
+    <height>291</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(216, 216, 216);</string>
+  </property>
+  <widget class="QGroupBox" name="BATTERY_STATE">
+   <property name="geometry">
+    <rect>
+     <x>670</x>
+     <y>30</y>
+     <width>181</width>
+     <height>221</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(255, 255, 255);</string>
+   </property>
+   <property name="title">
+    <string>BATTERY STATE</string>
+   </property>
+   <widget class="QLCDNumber" name="TEMP_READOUT">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="VOLTAGE_READOUT">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>90</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="CURRENT_READOUT">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>160</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="TEMP_LABEL">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>30</y>
+      <width>47</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>DEG</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="CURR_LABEL">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>170</y>
+      <width>47</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>AMPS</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="VOLT_LABEL">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>100</y>
+      <width>47</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>VOLTS</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="MODE">
+   <property name="geometry">
+    <rect>
+     <x>480</x>
+     <y>30</y>
+     <width>161</width>
+     <height>111</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(255, 255, 255);</string>
+   </property>
+   <property name="title">
+    <string>MODE</string>
+   </property>
+   <widget class="QRadioButton" name="QUIET">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>131</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Quiet (BATT ONLY)</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="LOUD">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>131</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Loud (ICE CHARGING)</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="MOTOR_SPEED">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>30</y>
+     <width>421</width>
+     <height>171</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(255, 255, 255);</string>
+   </property>
+   <property name="title">
+    <string>MOTOR SPEED</string>
+   </property>
+   <widget class="QSlider" name="STARTGEN">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>40</y>
+      <width>191</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">selection-color: rgb(0, 85, 0);
+selection-background-color: rgb(0, 170, 0);</string>
+    </property>
+    <property name="singleStep">
+     <number>1</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QSlider" name="ICEEMULATOR">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>120</y>
+      <width>191</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="STARTGEN_LABEL">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>10</y>
+      <width>121</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>STARTER/GENERATOR</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="icelabel">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>100</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ICE EMULATOR</string>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="STARTGEN_READOUT">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>40</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(234, 234, 234);
+
+</string>
+    </property>
+    <property name="smallDecimalPoint">
+     <bool>false</bool>
+    </property>
+    <property name="digitCount">
+     <number>5</number>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+    <property name="value" stdset="0">
+     <double>0.000000000000000</double>
+    </property>
+    <property name="intValue" stdset="0">
+     <number>0</number>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="ICE_READOUT">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>110</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(234, 234, 234);
+</string>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+    <property name="value" stdset="0">
+     <double>0.000000000000000</double>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
