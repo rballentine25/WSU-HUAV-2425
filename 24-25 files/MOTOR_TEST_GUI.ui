@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>907</width>
-    <height>291</height>
+    <width>851</width>
+    <height>278</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
   <widget class="QGroupBox" name="BATTERY_STATE">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>640</x>
      <y>30</y>
      <width>181</width>
      <height>221</height>
@@ -115,40 +115,40 @@
     <rect>
      <x>480</x>
      <y>30</y>
-     <width>161</width>
-     <height>111</height>
+     <width>131</width>
+     <height>71</height>
     </rect>
    </property>
    <property name="styleSheet">
     <string notr="true">background-color: rgb(255, 255, 255);</string>
    </property>
    <property name="title">
-    <string>MODE</string>
+    <string>S/G MODE</string>
    </property>
-   <widget class="QRadioButton" name="QUIET">
+   <widget class="QRadioButton" name="STARTER">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
+      <y>20</y>
       <width>131</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Quiet (BATT ONLY)</string>
+     <string>STARTER</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="LOUD">
+   <widget class="QRadioButton" name="GEN">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>60</y>
+      <y>40</y>
       <width>131</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Loud (ICE CHARGING)</string>
+     <string>GENERATOR</string>
     </property>
    </widget>
   </widget>

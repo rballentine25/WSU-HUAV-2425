@@ -10,9 +10,9 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
 
         # groupings
         self.mode_group = QButtonGroup(self)
-        self.mode_group.addButton(self.LOUD)
-        self.mode_group.addButton(self.QUIET)
-        self.QUIET.setChecked(True)
+        self.mode_group.addButton(self.GEN)
+        self.mode_group.addButton(self.STARTER)
+        self.STARTER.setChecked(True)
 
         # connections
         self.STARTGEN.valueChanged.connect(self.update_sg_readout)
