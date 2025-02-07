@@ -5,6 +5,11 @@ from MOTOR_TEST_GUI_UIDEF import Ui_Form
 import glob
 import time
 
+# file definition for the temp probe
+base_directory = '/sys/bus/w1/devices/'
+dev_folder = glob.glob(base_directory + '28-*')[0]  
+dev_file = dev_folder + '/w1_slave'
+
 class MOTOR_TEST_GUI(QWidget, Ui_Form):
     # INITIALIZATION METHOD
     def __init__(self):
@@ -22,21 +27,15 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.ICEEMULATOR.valueChanged.connect(self.update_ice_readout)
         # TEST: self.STARTGEN.valueChanged.connect(self.update_temp_readout)
 
-
-        # file definition for the temp probe
-        base_directory = '/sys/bus/w1/devices/'
-        dev_folder = glob.glob(base_directory + '28-*')[0]  
-        dev_file = dev_folder + '/w1_slave'
-
         # timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_temp_readout)
-        self.timer.start(1000)
+        self.timer.start(200)
 
 
 
     def read_raw(self):
-        file = open(self.dev_file, 'r')
+        file = open(dev_file, 'r')
         data = file.readlines()
         file.close()
         return data
@@ -71,7 +70,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     def update_temp_readout(self):
         newtemp = self.read_temp()
         self.TEMP_READOUT.display(newtemp)
-        time.sleep(0.5)
+        
 
 
 # RUNNING APP
