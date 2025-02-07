@@ -32,6 +32,8 @@ def read_temp():
     raw_temp = data[1][start_index:]
     temp_cels = float(raw_temp) / 1000      # file has temp in "millidegrees"
     temp_far = temp_cels * (9.0/5.0) + 32.0
-    return [temp_cels, temp_far]
+    return [temp_far]
 
-read_temp()
+for i in range(20):
+    print(read_temp())
+    time.sleep(0.2)
