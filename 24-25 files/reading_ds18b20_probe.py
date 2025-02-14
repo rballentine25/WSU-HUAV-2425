@@ -16,9 +16,9 @@ def read_raw():
     data = []
     for i in range(num_files):
             dev_file = dev_folder_list[i] + '/w1_slave'
-            file = open(dev_file, 'r')
-            data.append(file.readlines())
-            file.close()
+            with open(dev_file, 'r') as file:
+                data.append(file.readlines())
+            
     return data
 
 
@@ -27,14 +27,14 @@ def read_temp():
         # if the first line is not YES (data read correctly), wait 0.2s and try reading again.
         # repeat until data is read correctgly
         for i in range(len(data)):
-            if "YES" not in data[i][0]:
-                continue
-            else:
+            if "YES" in data[i][0]:
                 start_index = data[i][1].find('t=') + 2
                 raw_temp = data[i][1][start_index:]
                 temp_cels = float(raw_temp) / 1000      # file has temp in "millidegrees"
                 temp_far = temp_cels * (9.0/5.0) + 32.0
                 temps_farenheit[i] = temp_far
+            else:
+                 continue
         
         return temps_farenheit
 

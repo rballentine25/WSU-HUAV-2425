@@ -9,15 +9,15 @@ from time import sleep
 spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
 
 # create the cs (chip select)
-cs = digitalio.DigitalInOut(board.D5)
+cs = digitalio.DigitalInOut(board.D8)
 
 # create the mcp object
 mcp = MCP.MCP3008(spi, cs)
 
 # create an analog input channel on pin 0
-chan = AnalogIn(mcp, MCP.P3)
+chan = AnalogIn(mcp, MCP.P2)
 
-for i in range(50):
+for i in range(10):
     print('Raw ADC Value: ', chan.value)
     print('ADC Voltage: ' + str(chan.voltage) + 'V')
     sleep(0.25)
