@@ -1,5 +1,6 @@
 import glob # glob is a pattern match library for importing files
 import time
+from time import sleep
 
 
 # finding the file with temp data: glob.glob() returns a list of files/folders that 
@@ -37,6 +38,14 @@ def read_temp():
         
         return temps_farenheit
 
+start = time.time()
 temps = read_temp()
-for i in range(3):
-    print(temps[i])
+end = time.time()
+print("time to execute: ", (end-start), " sec")
+
+# for j in range(50):
+#     print("TEMPS AT CYCLE ", j, "\n")
+#     temps = read_temp()
+#     for i in range(3):
+#         print(temps[i])
+#     sleep(0.3)
