@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QButtonGroup
-from PyQt6.QtCore import QTimer, QThread
+from PyQt6.QtCore import QTimer, QThread, pyqtSignal
 from MOTOR_TEST_GUI_UIDEF import Ui_Form  
 import glob
 import busio
@@ -31,6 +31,7 @@ df = pd.DataFrame(columns=["time","a", "b", "d"])
 # temps_farenheit = [0]*3
 
 class tempReadingThread(QThread):
+    send_faren = pyqtSignal(list)
     temps_farenheit = [0]*3
 
     def read_raw(self):
@@ -58,18 +59,21 @@ class tempReadingThread(QThread):
                         #temps_farenheit[i] = temp_cels
                     else:
                         continue
-
+                    
+                self.send_faren.emit(self.temps_farenheit)
                 time.sleep(2.5) 
     
 
 class voltReadingThread(QThread):
     new_voltage = 0.0
+    send_volt = pyqtSignal(float)
 
     def run(self):
         #with lock:
             while True: 
                 curr_chan = AnalogIn(adc, MCP.P2)
                 new_voltage = curr_chan.voltage
+                self.send_volt.emit(new_voltage)
                 time.sleep(.5)
 
 
@@ -88,6 +92,8 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         # connections
         self.STARTGEN.valueChanged.connect(self.update_sg_readout)
         self.ICEEMULATOR.valueChanged.connect(self.update_ice_readout)
+
+    
         # TEST: self.STARTGEN.valueChanged.connect(self.update_temp_readout)
 
         # # timer
@@ -113,8 +119,8 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.temp_thread = tempReadingThread()
         self.volt_thread = voltReadingThread()
 
-        self.temp_thread.temps_farenheit.connect(self.update_temp_readout)
-        self.volt_thread.new_voltage.connect(self.update_volt_readout)
+        self.temp_thread.send_faren.connect(self.update_temp_readout)
+        self.volt_thread.send_volt.connect(self.update_volt_readout)
         
         self.temp_thread.start()
         self.volt_thread.start()
@@ -126,13 +132,13 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     def update_ice_readout(self, newvalue):
         self.ICE_READOUT.display(newvalue)
 
-    def update_temp_readout(self):
+    def update_temp_readout(self, temps_farenheit):
         #with lock:
             self.TEMP_1.display(temps_farenheit[0])
             self.TEMP_2.display(temps_farenheit[1])
             self.TEMP_3.display(temps_farenheit[2])
 
-    def update_volt_readout(self):
+    def update_volt_readout(self, new_voltage):
         # with lock: 
             self.VOLTAGE_READOUT.display(new_voltage)
 
