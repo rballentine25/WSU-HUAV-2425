@@ -43,6 +43,7 @@ class tempReadingThread(QThread):
                 data.append(file.readlines())
         return data
 
+
     def run(self):
         #with lock:
             while True:
@@ -55,7 +56,7 @@ class tempReadingThread(QThread):
                         raw_temp = data[i][1][start_index:]
                         temp_cels = float(raw_temp) / 1000      # file has temp in "millidegrees"
                         temp_far = temp_cels * (9.0/5.0) + 32.0
-                        self.temps_farenheit[i] = temp_far
+                        self.temps_farenheit[i] = temp_cels
                         #temps_farenheit[i] = temp_cels
                     else:
                         continue
@@ -71,9 +72,26 @@ class voltReadingThread(QThread):
     def run(self):
         #with lock:
             while True: 
-                curr_chan = AnalogIn(adc, MCP.P2)
-                new_voltage = curr_chan.voltage
+                volt_chan = AnalogIn(adc, MCP.P2)
+                new_voltage = volt_chan.voltage
+                new_voltage = new_voltage*5
                 self.send_volt.emit(new_voltage)
+                time.sleep(.5)
+
+
+class currReadingThread(QThread):
+    new_curr = 0.0
+    send_curr = pyqtSignal(float)
+
+    def run(self):
+        #with lock:
+            while True: 
+                curr_chan = AnalogIn(adc, MCP.P0)
+                # supposed to be converting: 1mv/10ma
+                new_curr_pre = curr_chan.voltage 
+                # TODO: adjustby sensor specsheet 
+                new_curr = new_curr_pre * 5 * 10
+                self.send_curr.emit(new_curr)
                 time.sleep(.5)
 
 
@@ -118,12 +136,15 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     def start_sensor_threads(self):
         self.temp_thread = tempReadingThread()
         self.volt_thread = voltReadingThread()
+        self.curr_thread = currReadingThread()
 
         self.temp_thread.send_faren.connect(self.update_temp_readout)
         self.volt_thread.send_volt.connect(self.update_volt_readout)
+        self.curr_thread.send_curr.connect(self.update_curr_readout)
         
         self.temp_thread.start()
         self.volt_thread.start()
+        self.curr_thread.start()
 
 # EVENT HANDLERS
     def update_sg_readout(self, newvalue):
@@ -142,8 +163,9 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         # with lock: 
             self.VOLTAGE_READOUT.display(new_voltage)
 
-    def update_curr_readout(self):
-        pass
+    def update_curr_readout(self, new_curr):
+        #with lock:
+            self.CURRENT_READOUT.display(new_curr)
 
 
 # RUNNING APP
