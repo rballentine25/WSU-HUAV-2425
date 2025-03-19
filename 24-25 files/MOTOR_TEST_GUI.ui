@@ -60,27 +60,27 @@
    <widget class="QLabel" name="CURR_LABEL">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>120</x>
       <y>160</y>
-      <width>111</width>
+      <width>31</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>CURRENT</string>
+     <string>AMPS</string>
     </property>
    </widget>
    <widget class="QLabel" name="VOLT_LABEL">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>120</x>
       <y>80</y>
-      <width>71</width>
+      <width>41</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>VOLTAGE</string>
+     <string>VOLTS</string>
     </property>
    </widget>
    <zorder>CURR_LABEL</zorder>
@@ -342,7 +342,7 @@ selection-background-color: rgb(0, 170, 0);</string>
      </rect>
     </property>
     <property name="text">
-     <string>T1 (F)</string>
+     <string>T1 (C)</string>
     </property>
    </widget>
    <widget class="QLabel" name="VOLT_LABEL_3">
@@ -355,7 +355,7 @@ selection-background-color: rgb(0, 170, 0);</string>
      </rect>
     </property>
     <property name="text">
-     <string>T2 (F)</string>
+     <string>T2 (C)</string>
     </property>
    </widget>
    <widget class="QLabel" name="VOLT_LABEL_4">
@@ -368,7 +368,7 @@ selection-background-color: rgb(0, 170, 0);</string>
      </rect>
     </property>
     <property name="text">
-     <string>T2 (F)</string>
+     <string>T3 (C)</string>
     </property>
    </widget>
   </widget>
