@@ -26,3 +26,4 @@ adc = MCP.MCP3008(spi, cs)
 
 # lock for thread safety: prevents threads from overwriting each other
 lock = threading.Lock()
+

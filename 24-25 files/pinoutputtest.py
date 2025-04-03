@@ -5,7 +5,7 @@ from gpiozero import LED
 # USED TO TEST RELAYS 
 
 # using GPIO pin numbering
-currpin = 22
+currpin = 27
 
 # turns signal on (3.3v) for x seconds then turns off
 pin = LED(currpin)
