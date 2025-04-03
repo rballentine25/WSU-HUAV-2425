@@ -6,15 +6,30 @@ http://www.electronicwings.com
 
 import RPi.GPIO as GPIO
 from time import sleep
+from gpiozero import LED, PWMLED
+
+
+gentoload_pin = 20 #gpio20, pin 38
+MCpwr_pin = 21 #gpio21, pin 40
+res6_pin = 26 #gpio19, pin 35
+pwm_pwr_pin = 13 #gpio18, pin 12
+
+gentoload = LED(gentoload_pin)
+MCpwr = LED(MCpwr_pin)
+res6 = LED(res6_pin)
+
+gentoload.on()
+MCpwr.on()
+res6.on()
 
 # define the led pin: here using PWM0, GPIO18/pin 12
 # RS motor is 12, LS motor is 33
 # RS motor starts turning at 40%. LS motor starts turning at 45% 
 # reverse for motor is switch in | setting
-outpin = 33				        # PWM pin connected to LED
+outpin = 18				        # PWM pin connected to LED
 
 GPIO.setwarnings(False)			#disable warnings
-GPIO.setmode(GPIO.BOARD)		#set pin numbering system
+GPIO.setmode(GPIO.BCM)		#set pin numbering system
 GPIO.setup(outpin,GPIO.OUT)
 
 # creating a PWM object: GPIO.PWM(pin no, frequency)
@@ -30,7 +45,7 @@ while True:
     # first test was 0-100 and genset didn't 
 
     # following loop will go from 35 to 100 by increments of 5
-    for duty in range(35,101,5):
+    for duty in range(35,71,5):
         # increase duty cycle by 5% every for loop iteration
         pi_pwm.ChangeDutyCycle(duty) #provide duty cycle in the range 35-100
         print("increasing to ", duty, "%")
@@ -38,10 +53,10 @@ while True:
         sleep(5)
 
     # run at 100% duty cycle for 10 sec
-    sleep(10)
+    sleep(5)
 
     # decrease duty cycle from 100 to 50 by 5's, pausing every 2 secs
-    for duty in range(100,49,-5):
+    for duty in range(70,0,-5):
         pi_pwm.ChangeDutyCycle(duty)
         sleep(2)
 
