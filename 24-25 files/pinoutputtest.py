@@ -9,6 +9,7 @@ currpin = 27
 
 # turns signal on (3.3v) for x seconds then turns off
 pin = LED(currpin)
+
 pin.on()
-time.sleep(2)
+time.sleep(20)
 pin.off()

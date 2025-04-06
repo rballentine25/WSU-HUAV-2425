@@ -21,8 +21,6 @@ MCpwr.on()
 res6.on()
 # sgcontrol.on()
 
-
-
 # output pin for the PWM signal: should be either 18 (RHS) or 19 (LHS)
 outpin = 19			       
 
@@ -32,27 +30,25 @@ GPIO.setup(outpin,GPIO.OUT)
 
 # creating a PWM object: GPIO.PWM(pin no, frequency)
 # frequency was whatever was already in the elctronicwings code
-pi_pwm = GPIO.PWM(outpin,1000)	#create PWM instance with frequency
+pi_pwm = GPIO.PWM(outpin,1000)	
 
-# start(duty cycle %) starts the pwm generation, here with duty cycle of 0% (HIGH 0% of time)
-# pi_pwm.start(1)				    #start PWM of required Duty Cycle 
 
+#start PWM 
 print("starting")
-pi_pwm.start(70)  # changing to 70%
-sleep(5)
-#input('Press Return to Stop:')
-pi_pwm.ChangeDutyCycle(0)   # changing back to 0%
-pi_pwm.stop()
-GPIO.cleanup()
-
-pi_pwm.stop()
-GPIO.cleanup()
+pi_pwm.start(50)                # starting at 50%
+sleep(20)                       # sending signal for 20 secs
+pi_pwm.ChangeDutyCycle(0)       # changing back to 0%
+pi_pwm.stop()                   # stopping the PWM signals
 
 # turning off relays
 gentoload.off()
 MCpwr.off()
 res6.off()
 #sgcontrol.off()
+
+GPIO.cleanup()                  # cleaning up
+
+
 
 
 # LOOP TO AMP UP THEN DOWN 
