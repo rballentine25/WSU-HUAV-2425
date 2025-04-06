@@ -22,8 +22,9 @@ res6.on()
 # sgcontrol.on()
 
 
+
 # output pin for the PWM signal: should be either 18 (RHS) or 19 (LHS)
-outpin = 18 				       
+outpin = 19			       
 
 GPIO.setwarnings(False)			#disable warnings
 GPIO.setmode(GPIO.BCM)		    #set pin numbering system to broadcom (GPIO)
@@ -34,21 +35,24 @@ GPIO.setup(outpin,GPIO.OUT)
 pi_pwm = GPIO.PWM(outpin,1000)	#create PWM instance with frequency
 
 # start(duty cycle %) starts the pwm generation, here with duty cycle of 0% (HIGH 0% of time)
-pi_pwm.start(0)				    #start PWM of required Duty Cycle 
+# pi_pwm.start(1)				    #start PWM of required Duty Cycle 
 
 print("starting")
-pi_pwm.ChangeDutyCycle(70)  # changing to 70%
+pi_pwm.start(70)  # changing to 70%
 sleep(5)
+#input('Press Return to Stop:')
 pi_pwm.ChangeDutyCycle(0)   # changing back to 0%
-print("done")
+pi_pwm.stop()
+GPIO.cleanup()
+
+pi_pwm.stop()
+GPIO.cleanup()
 
 # turning off relays
 gentoload.off()
 MCpwr.off()
 res6.off()
 #sgcontrol.off()
-
-
 
 
 # LOOP TO AMP UP THEN DOWN 
