@@ -31,14 +31,44 @@ GPIO.setup(outpin,GPIO.OUT)
 # creating a PWM object: GPIO.PWM(pin no, frequency)
 # frequency was whatever was already in the elctronicwings code
 pi_pwm = GPIO.PWM(outpin,1000)	
+pi_pwm.start(0)  
 
+# #start PWM 
+# print("starting")
+# pi_pwm.start(100)                # starting at 50
+# sleep(1)
+# input('press enter to continue:')                       # sending signal for 20 secs
+# pi_pwm.ChangeDutyCycle(0)       # changing back to 0%
+# pi_pwm.stop()                   # stopping the PWM signals
 
-#start PWM 
-print("starting")
-pi_pwm.start(50)                # starting at 50%
-sleep(20)                       # sending signal for 20 secs
-pi_pwm.ChangeDutyCycle(0)       # changing back to 0%
-pi_pwm.stop()                   # stopping the PWM signals
+           # cleaning up
+
+# LOOP TO AMP UP THEN DOWN 
+
+while True:
+    # first for loop increases duty cycle from 35 to 100 power
+    # second for loop decreases duty cycle from 100 to 50% power
+    # first test was 0-100 and genset didn't 
+
+    # following loop will go from 35 to 100 by increments of 5
+    for duty in range(50,101,1):
+        # increase duty cycle by 5% every for loop iteration
+        pi_pwm.ChangeDutyCycle(duty) #provide duty cycle in the range 35-100
+        print("increasing to ", duty, "%")
+        # incrememnt every 5 sec
+        sleep(1)
+
+    # run at 100% duty cycle for 10 sec
+    sleep(5)
+
+    # decrease duty cycle from 100 to 50 by 5's, pausing every 2 secs
+    for duty in range(100,50,-5):
+        pi_pwm.ChangeDutyCycle(duty)
+        sleep(1)
+
+    break
+
+pi_pwm.stop()      
 
 # turning off relays
 gentoload.off()
@@ -46,34 +76,4 @@ MCpwr.off()
 res6.off()
 #sgcontrol.off()
 
-GPIO.cleanup()                  # cleaning up
-
-
-
-
-# LOOP TO AMP UP THEN DOWN 
-
-# while True:
-#     # first for loop increases duty cycle from 35 to 100 power
-#     # second for loop decreases duty cycle from 100 to 50% power
-#     # first test was 0-100 and genset didn't 
-
-#     # following loop will go from 35 to 100 by increments of 5
-#     for duty in range(35,71,5):
-#         # increase duty cycle by 5% every for loop iteration
-#         pi_pwm.ChangeDutyCycle(duty) #provide duty cycle in the range 35-100
-#         print("increasing to ", duty, "%")
-#         # incrememnt every 5 sec
-#         sleep(5)
-
-#     # run at 100% duty cycle for 10 sec
-#     sleep(5)
-
-#     # decrease duty cycle from 100 to 50 by 5's, pausing every 2 secs
-#     for duty in range(70,0,-5):
-#         pi_pwm.ChangeDutyCycle(duty)
-#         sleep(2)
-
-#     break
-    
-    
+GPIO.cleanup()       
