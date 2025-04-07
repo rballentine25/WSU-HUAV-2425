@@ -108,9 +108,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.STARTER.setChecked(True)
 
         # connections
-        self.STARTGEN.valueChanged.connect(self.update_sg_readout)
-        self.ICEEMULATOR.valueChanged.connect(self.update_ice_readout)
-
+        self.STARTGEN.valueChanged.connect(self.update_dutcyc_readout)
     
         # TEST: self.STARTGEN.valueChanged.connect(self.update_temp_readout)
 
@@ -147,11 +145,9 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.curr_thread.start()
 
 # EVENT HANDLERS
-    def update_sg_readout(self, newvalue):
-        self.STARTGEN_READOUT.display(newvalue)
+    def update_dutcyc_readout(self, newvalue):
+        self.DUTYCYCLE_READOUT.display(newvalue)
 
-    def update_ice_readout(self, newvalue):
-        self.ICE_READOUT.display(newvalue)
 
     def update_temp_readout(self, temps_farenheit):
         #with lock:
