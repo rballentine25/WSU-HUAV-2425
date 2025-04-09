@@ -46,6 +46,8 @@ r3_pin = LED(15)
 r2_pin = LED(23)
 r1_pin = LED(24)
 
+pwm_output_pin = 100
+
 
 
 class tempReadingThread(QThread):
@@ -121,6 +123,11 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
 
         # starter with sg control pin on
         SGcontrol_pin.on()
+        pwm_output_pin = 19 # GPIO 19 for LHS motor
+        GPIO.setmode(GPIO.BCM) #set pin numbering system to broadcom (GPIO)
+        GPIO.setup(pwm_output_pin,GPIO.OUT)
+        self.pwm_sig = GPIO.PWM(pwm_output_pin,1000)	# creating a PWM object: GPIO.PWM(pin no, frequency)
+        self.pwm_sig.start(0)
 
         # groupings
         self.power_group = QButtonGroup(self)
@@ -142,7 +149,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
 
 
         # connections
-        self.STARTGEN.valueChanged.connect(self.update_dutcyc_readout)
+        self.STARTGEN.valueChanged.connect(self.dutcyc_changed)
         self.GEN2BATT.toggled.connect(lambda:self.power_btn_change(self.GEN2BATT))
         self.GEN2LOAD.toggled.connect(lambda:self.power_btn_change(self.GEN2LOAD))
         self.BATT2LOAD.toggled.connect(lambda:self.power_btn_change(self.BATT2LOAD))
@@ -174,8 +181,10 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.curr_thread.start()
 
 # EVENT HANDLERS
-    def update_dutcyc_readout(self, newvalue):
+    def dutcyc_changed(self, newvalue):
         self.DUTYCYCLE_READOUT.display(newvalue)
+        self.pwm_sig.ChangeDutyCycle(newvalue)
+
 
     def update_temp_readout(self, temps_farenheit):
         #with lock:
@@ -216,10 +225,20 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         if starterbtn.isChecked() == True:
             SGcontrol_pin.on()
             self.STARTERLBL.setText("STARTER ON")
+            pwm_output_pin = 19 # GPIO 19 for LHS MOTOR
+
+            GPIO.setup(pwm_output_pin,GPIO.OUT)
+            self.pwm_sig = GPIO.PWM(pwm_output_pin,1000)	# creating a PWM object: GPIO.PWM(pin no, frequency)
+            self.pwm_sig.start(0)
 
         else:
             SGcontrol_pin.off()
             self.STARTERLBL.setText("STARTER OFF")
+            pwm_output_pin = 18 # GPIO 18 for RHS MOTOR
+
+            GPIO.setup(pwm_output_pin,GPIO.OUT)
+            self.pwm_sig = GPIO.PWM(pwm_output_pin,1000)	# creating a PWM object: GPIO.PWM(pin no, frequency)
+            self.pwm_sig.start(0)
 
     
     def resist_btn_change(self, selected):
