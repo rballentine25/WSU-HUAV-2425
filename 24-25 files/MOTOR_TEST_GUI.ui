@@ -10,6 +10,13 @@
     <height>712</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>12</pointsize>
+    <weight>75</weight>
+    <bold>true</bold>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -103,40 +110,52 @@
    <property name="title">
     <string>S/G MODE</string>
    </property>
-   <widget class="QRadioButton" name="STARTER">
+   <widget class="QPushButton" name="STARTERBTN">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>40</x>
       <y>40</y>
-      <width>131</width>
-      <height>17</height>
+      <width>99</width>
+      <height>30</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <pointsize>11</pointsize>
-     </font>
+    <property name="styleSheet">
+     <string notr="true">QPushButton:checked {
+background-color: darkgray
+}</string>
     </property>
     <property name="text">
      <string>STARTER</string>
     </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
    </widget>
-   <widget class="QRadioButton" name="GEN">
+   <widget class="QLabel" name="STARTERLBL">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>70</y>
-      <width>131</width>
-      <height>17</height>
+      <x>0</x>
+      <y>80</y>
+      <width>171</width>
+      <height>22</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>11</pointsize>
+      <pointsize>12</pointsize>
      </font>
     </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
     <property name="text">
-     <string>GENERATOR</string>
+     <string>STARTER ON</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
@@ -356,7 +375,7 @@ selection-background-color: rgb(0, 170, 0);</string>
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>131</width>
+      <width>161</width>
       <height>17</height>
      </rect>
     </property>
@@ -464,7 +483,7 @@ selection-background-color: rgb(0, 170, 0);</string>
      <rect>
       <x>10</x>
       <y>210</y>
-      <width>131</width>
+      <width>161</width>
       <height>17</height>
      </rect>
     </property>

@@ -32,6 +32,22 @@ df = pd.DataFrame(columns=["time","a", "b", "d"])
 # new_voltage = 0.0
 # temps_farenheit = [0]*3
 
+batt2load_pin = LED(0)
+gen2load_pin = LED(5)
+gen2batt_pin = LED(6)
+pwr2MC_pin = LED(16)
+SGcontrol_pin = LED(20)
+battneg_pin = LED(21)
+r7_pin = LED(17)
+r6_pin = LED(27)
+r5_pin = LED(22)
+r4_pin = LED(14)
+r3_pin = LED(15)
+r2_pin = LED(23)
+r1_pin = LED(24)
+
+
+
 class tempReadingThread(QThread):
     send_faren = pyqtSignal(list)
     temps_farenheit = [0]*3
@@ -103,12 +119,10 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         super().__init__()
         self.setupUi(self)  
 
-        # groupings
-        self.mode_group = QButtonGroup(self)
-        self.mode_group.addButton(self.GEN)
-        self.mode_group.addButton(self.STARTER)
-        self.STARTER.setChecked(True)
+        # starter with sg control pin on
+        SGcontrol_pin.on()
 
+        # groupings
         self.power_group = QButtonGroup(self)
         self.power_group.addButton(self.GEN2BATT)
         self.power_group.addButton(self.GEN2LOAD)
@@ -123,32 +137,27 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.resist_group.addButton(self.R6)
         self.resist_group.addButton(self.R7)
 
+        self.STARTERBTN.setCheckable(True)
+        self.STARTERBTN.setChecked(True)
+
+
         # connections
         self.STARTGEN.valueChanged.connect(self.update_dutcyc_readout)
         self.GEN2BATT.toggled.connect(lambda:self.power_btn_change(self.GEN2BATT))
         self.GEN2LOAD.toggled.connect(lambda:self.power_btn_change(self.GEN2LOAD))
         self.BATT2LOAD.toggled.connect(lambda:self.power_btn_change(self.BATT2LOAD))
-        
+        self.STARTERBTN.toggled.connect(lambda:self.starter_btn_change(self.STARTERBTN))
+
+        self.R7.toggled.connect(lambda:self.resist_btn_change(self.R7))
+        self.R6.toggled.connect(lambda:self.resist_btn_change(self.R6))
+        self.R5.toggled.connect(lambda:self.resist_btn_change(self.R5))
+        self.R4.toggled.connect(lambda:self.resist_btn_change(self.R4))
+        self.R3.toggled.connect(lambda:self.resist_btn_change(self.R3))
+        self.R2.toggled.connect(lambda:self.resist_btn_change(self.R2))
+        self.R1.toggled.connect(lambda:self.resist_btn_change(self.R1))        
     
-        # TEST: self.STARTGEN.valueChanged.connect(self.update_temp_readout)
-
-        # # timer
-        # self.timer1 = QTimer(self)
-        # self.timer2 = QTimer(self)
-        # self.timer1.timeout.connect(self.update_temp_readout)
-        # self.timer2.timeout.connect(self.update_volt_readout)
-        # self.timer2.timeout.connect(self.update_curr_readout)
-        # self.timer2.start(300)
-        # self.timer1.start(500)
-
-        # temp_thread = threading.Thread(target=self.update_temp_readout)
-        # temp_thread.start()
-        # temp_thread.join()
-
-        # volt_thread = threading.Thread(target=self.update_volt_readout)
-        # volt_thread.start()
-        # volt_thread.join()
         self.start_sensor_threads()
+
   
 
     def start_sensor_threads(self):
@@ -185,13 +194,75 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     def power_btn_change(self, selected):
         if selected.isChecked() == True:
             if selected.text() == "GENERATOR TO BATTERY":
-                print("GEN2BATT selected")
+                gen2load_pin.off()
+                batt2load_pin.off()
+
+                gen2batt_pin.on()
 
             elif selected.text() == "GENERATOR TO LOAD":
-                print("GEN2LOAD selected")
+                batt2load_pin.off()
+                gen2batt_pin.off()
+                
+                gen2load_pin.on()
 
             elif selected.text() == "BATTERY TO LOAD":
-                print("BATT2LOAD selected")
+                gen2batt_pin.off()
+                gen2load_pin.off()
+
+                batt2load_pin.on()
+
+
+    def starter_btn_change(self, starterbtn):
+        if starterbtn.isChecked() == True:
+            SGcontrol_pin.on()
+            self.STARTERLBL.setText("STARTER ON")
+
+        else:
+            SGcontrol_pin.off()
+            self.STARTERLBL.setText("STARTER OFF")
+
+    
+    def resist_btn_change(self, selected):
+        if selected.isChecked() == True:
+            if selected.text() == "Resistor 7 (HIGH)":
+                self.all_resistors_off()
+                r7_pin.on()
+
+            elif selected.text() == "Resistor 6":
+                self.all_resistors_off()
+                r6_pin.on()
+
+            elif selected.text() == "Resistor 5":
+                self.all_resistors_off()
+                r5_pin.on()
+
+            elif selected.text() == "Resistor 4":
+                self.all_resistors_off()
+                r4_pin.on()
+
+            elif selected.text() == "Resistor 3":
+                self.all_resistors_off()
+                r3_pin.on()
+
+            elif selected.text() == "Resistor 2":
+                self.all_resistors_off()
+                r2_pin.on()
+
+            elif selected.text() == "Resistor 1 (LOW)":
+                self.all_resistors_off()
+                r1_pin.on()
+            
+            
+    def all_resistors_off(self):
+        r7_pin.off()
+        r6_pin.off()
+        r5_pin.off()
+        r4_pin.off()
+        r3_pin.off()
+        r2_pin.off()
+        r1_pin.off()
+        return
+
 
 
 
