@@ -11,6 +11,8 @@ from adafruit_mcp3xxx.analog_in import AnalogIn
 import threading
 import pandas as pd
 import time
+import RPi.GPIO as GPIO
+from gpiozero import LED, PWMLED
 
 # file definition for the temp probe
 base_directory = '/sys/bus/w1/devices/'
@@ -107,8 +109,26 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.mode_group.addButton(self.STARTER)
         self.STARTER.setChecked(True)
 
+        self.power_group = QButtonGroup(self)
+        self.power_group.addButton(self.GEN2BATT)
+        self.power_group.addButton(self.GEN2LOAD)
+        self.power_group.addButton(self.BATT2LOAD)
+
+        self.resist_group = QButtonGroup(self)
+        self.resist_group.addButton(self.R1)
+        self.resist_group.addButton(self.R2)
+        self.resist_group.addButton(self.R3)
+        self.resist_group.addButton(self.R4)
+        self.resist_group.addButton(self.R5)
+        self.resist_group.addButton(self.R6)
+        self.resist_group.addButton(self.R7)
+
         # connections
         self.STARTGEN.valueChanged.connect(self.update_dutcyc_readout)
+        self.GEN2BATT.toggled.connect(lambda:self.power_btn_change(self.GEN2BATT))
+        self.GEN2LOAD.toggled.connect(lambda:self.power_btn_change(self.GEN2LOAD))
+        self.BATT2LOAD.toggled.connect(lambda:self.power_btn_change(self.BATT2LOAD))
+        
     
         # TEST: self.STARTGEN.valueChanged.connect(self.update_temp_readout)
 
@@ -148,7 +168,6 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     def update_dutcyc_readout(self, newvalue):
         self.DUTYCYCLE_READOUT.display(newvalue)
 
-
     def update_temp_readout(self, temps_farenheit):
         #with lock:
             self.TEMP_1.display(temps_farenheit[0])
@@ -162,6 +181,18 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     def update_curr_readout(self, new_curr):
         #with lock:
             self.CURRENT_READOUT.display(new_curr)
+
+    def power_btn_change(self, selected):
+        if selected.isChecked() == True:
+            if selected.text() == "GENERATOR TO BATTERY":
+                print("GEN2BATT selected")
+
+            elif selected.text() == "GENERATOR TO LOAD":
+                print("GEN2LOAD selected")
+
+            elif selected.text() == "BATTERY TO LOAD":
+                print("BATT2LOAD selected")
+
 
 
 # RUNNING APP
