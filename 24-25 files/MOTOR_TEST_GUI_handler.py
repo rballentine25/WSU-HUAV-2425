@@ -97,6 +97,7 @@ class voltReadingThread(QThread):
                 new_voltage = new_voltage*5
                 self.send_volt.emit(new_voltage)
                 time.sleep(.5)
+    
 
 
 class currReadingThread(QThread):
@@ -115,6 +116,7 @@ class currReadingThread(QThread):
                 time.sleep(.5)
 
 
+
 class MOTOR_TEST_GUI(QWidget, Ui_Form):
     # INITIALIZATION METHOD
     def __init__(self):
@@ -122,6 +124,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.setupUi(self)  
 
         # starter with sg control pin on
+        self.all_relays_off()   # make sure all relays are off to start
         SGcontrol_pin.on()
         pwm_output_pin = 19 # GPIO 19 for LHS motor
         GPIO.setmode(GPIO.BCM) #set pin numbering system to broadcom (GPIO)
@@ -155,6 +158,9 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.BATT2LOAD.toggled.connect(lambda:self.power_btn_change(self.BATT2LOAD))
         self.STARTERBTN.toggled.connect(lambda:self.starter_btn_change(self.STARTERBTN))
 
+        self.RELAYSOFF.clicked.connect(self.relaysoff_clicked)
+        self.RESISTORSOFF.clicked.connect(self.resistorsoff_clicked)
+
         self.R7.toggled.connect(lambda:self.resist_btn_change(self.R7))
         self.R6.toggled.connect(lambda:self.resist_btn_change(self.R6))
         self.R5.toggled.connect(lambda:self.resist_btn_change(self.R5))
@@ -164,6 +170,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.R1.toggled.connect(lambda:self.resist_btn_change(self.R1))        
     
         self.start_sensor_threads()
+        return
 
   
 
@@ -179,11 +186,13 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.temp_thread.start()
         self.volt_thread.start()
         self.curr_thread.start()
+        return
 
 # EVENT HANDLERS
     def dutcyc_changed(self, newvalue):
         self.DUTYCYCLE_READOUT.display(newvalue)
         self.pwm_sig.ChangeDutyCycle(newvalue)
+        return
 
 
     def update_temp_readout(self, temps_farenheit):
@@ -191,26 +200,31 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
             self.TEMP_1.display(temps_farenheit[0])
             self.TEMP_2.display(temps_farenheit[1])
             self.TEMP_3.display(temps_farenheit[2])
+            return
 
     def update_volt_readout(self, new_voltage):
         # with lock: 
             self.VOLTAGE_READOUT.display(new_voltage)
+            return
 
     def update_curr_readout(self, new_curr):
         #with lock:
             self.CURRENT_READOUT.display(new_curr)
+            return
 
     def power_btn_change(self, selected):
         if selected.isChecked() == True:
             if selected.text() == "GENERATOR TO BATTERY":
                 gen2load_pin.off()
                 batt2load_pin.off()
+                battneg_pin.off()
 
                 gen2batt_pin.on()
 
             elif selected.text() == "GENERATOR TO LOAD":
                 batt2load_pin.off()
                 gen2batt_pin.off()
+                battneg_pin.off()
                 
                 gen2load_pin.on()
 
@@ -219,10 +233,12 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
                 gen2load_pin.off()
 
                 batt2load_pin.on()
-
+                battneg_pin.on()
+        return
 
     def starter_btn_change(self, starterbtn):
         if starterbtn.isChecked() == True:
+            pwr2MC_pin.off()
             SGcontrol_pin.on()
             self.STARTERLBL.setText("STARTER ON")
             pwm_output_pin = 19 # GPIO 19 for LHS MOTOR
@@ -233,6 +249,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
 
         else:
             SGcontrol_pin.off()
+            pwr2MC_pin.on()
             self.STARTERLBL.setText("STARTER OFF")
             pwm_output_pin = 18 # GPIO 18 for RHS MOTOR
 
@@ -240,6 +257,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
             self.pwm_sig = GPIO.PWM(pwm_output_pin,1000)	# creating a PWM object: GPIO.PWM(pin no, frequency)
             self.pwm_sig.start(0)
 
+        return
     
     def resist_btn_change(self, selected):
         if selected.isChecked() == True:
@@ -270,7 +288,45 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
             elif selected.text() == "Resistor 1 (LOW)":
                 self.all_resistors_off()
                 r1_pin.on()
+
+        return
+
+
+    def resistorsoff_clicked(self):
+        self.all_resistors_off()
+        if self.resist_group.checkedButton() is not None:
+            self.resist_group.setExclusive(False)
+            for button in self.resist_group.buttons():
+                button.setChecked(False)
             
+            self.resist_group.setExclusive(True)
+        return
+
+    def relaysoff_clicked(self):
+
+        self.STARTERBTN.setChecked(False)
+        self.STARTERLBL.setText("STARTER OFF")
+        self.pwm_sig.stop()
+        self.all_relays_off()
+
+        # turn resistor group off
+        if self.resist_group.checkedButton() is not None:
+            self.resist_group.setExclusive(False)
+            for button in self.resist_group.buttons():
+                button.setChecked(False)
+            self.resist_group.setExclusive(True)
+
+        # turn off power group
+        if self.power_group.checkedButton() is not None:
+            self.power_group.setExclusive(False)
+            for button in self.power_group.buttons():
+                button.setChecked(False)
+            self.power_group.setExclusive(True)  
+
+        return
+
+
+
             
     def all_resistors_off(self):
         r7_pin.off()
@@ -280,6 +336,24 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         r3_pin.off()
         r2_pin.off()
         r1_pin.off()
+
+        return
+
+    def all_relays_off(self):
+        r7_pin.off()
+        r6_pin.off()
+        r5_pin.off()
+        r4_pin.off()
+        r3_pin.off()
+        r2_pin.off()
+        r1_pin.off()
+
+        batt2load_pin.off()
+        gen2load_pin.off()
+        gen2batt_pin.off()
+        pwr2MC_pin.off()
+        SGcontrol_pin.off()
+        battneg_pin.off()
         return
 
 
