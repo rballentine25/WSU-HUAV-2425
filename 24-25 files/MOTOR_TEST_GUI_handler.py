@@ -389,6 +389,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     def slider_reset(self):
         self.STARTGEN.setValue(0)
         self.DUTYCYCLE_READOUT.display(0)
+        #grrrr
 
 
 
