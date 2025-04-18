@@ -47,6 +47,7 @@ r2_pin = LED(23)
 r1_pin = LED(24)
 
 pwm_output_pin = 100
+freq = 2000
 
 
 
@@ -74,7 +75,7 @@ class tempReadingThread(QThread):
                     if "YES" in data[i][0]:
                         start_index = data[i][1].find('t=') + 2
                         raw_temp = data[i][1][start_index:]
-                        temp_cels = float(raw_temp) / 1000      # file has temp in "millidegrees"
+                        temp_cels = float(raw_temp) / freq      # file has temp in "millidegrees"
                         temp_far = temp_cels * (9.0/5.0) + 32.0
                         self.temps_farenheit[i] = temp_cels
                         #temps_farenheit[i] = temp_cels
@@ -123,13 +124,14 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         super().__init__()
         self.setupUi(self)  
 
+        GPIO.setmode(GPIO.BCM) #set pin numbering system to broadcom (GPIO)
+
         # starter with sg control pin on
         self.all_relays_off()   # make sure all relays are off to start
         SGcontrol_pin.on()
         pwm_output_pin = 19 # GPIO 19 for LHS motor
-        GPIO.setmode(GPIO.BCM) #set pin numbering system to broadcom (GPIO)
         GPIO.setup(pwm_output_pin,GPIO.OUT)
-        self.pwm_sig = GPIO.PWM(pwm_output_pin,1000)	# creating a PWM object: GPIO.PWM(pin no, frequency)
+        self.pwm_sig = GPIO.PWM(pwm_output_pin,freq)	# creating a PWM object: GPIO.PWM(pin no, frequency)
         self.pwm_sig.start(0)
 
         # groupings
@@ -150,9 +152,12 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.STARTERBTN.setCheckable(True)
         self.STARTERBTN.setChecked(True)
 
+        self.buttons_disable()
+
 
         # connections
-        self.STARTGEN.valueChanged.connect(self.dutcyc_changed)
+        self.STARTGEN.sliderReleased.connect(self.dutcyc_released)
+        self.STARTGEN.valueChanged.connect(self.duty_readout_changed)
         self.GEN2BATT.toggled.connect(lambda:self.power_btn_change(self.GEN2BATT))
         self.GEN2LOAD.toggled.connect(lambda:self.power_btn_change(self.GEN2LOAD))
         self.BATT2LOAD.toggled.connect(lambda:self.power_btn_change(self.BATT2LOAD))
@@ -189,11 +194,14 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         return
 
 # EVENT HANDLERS
-    def dutcyc_changed(self, newvalue):
-        self.DUTYCYCLE_READOUT.display(newvalue)
+    def dutcyc_released(self):
+        newvalue = self.STARTGEN.value()
         self.pwm_sig.ChangeDutyCycle(newvalue)
         return
 
+    def duty_readout_changed(self, newvalue):
+        self.DUTYCYCLE_READOUT.display(newvalue)
+        return
 
     def update_temp_readout(self, temps_farenheit):
         #with lock:
@@ -238,24 +246,34 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
 
     def starter_btn_change(self, starterbtn):
         if starterbtn.isChecked() == True:
-            pwr2MC_pin.off()
+            self.pwm_sig.stop()
+
+            self.all_relays_off()
             SGcontrol_pin.on()
             self.STARTERLBL.setText("STARTER ON")
+            
             pwm_output_pin = 19 # GPIO 19 for LHS MOTOR
-
             GPIO.setup(pwm_output_pin,GPIO.OUT)
-            self.pwm_sig = GPIO.PWM(pwm_output_pin,1000)	# creating a PWM object: GPIO.PWM(pin no, frequency)
+            self.pwm_sig = GPIO.PWM(pwm_output_pin,freq)	# creating a PWM object: GPIO.PWM(pin no, frequency)
             self.pwm_sig.start(0)
+
+            self.buttons_disable()
+            self.slider_reset()
 
         else:
-            SGcontrol_pin.off()
+            self.pwm_sig.stop()
+
+            self.all_relays_off()
             pwr2MC_pin.on()
             self.STARTERLBL.setText("STARTER OFF")
-            pwm_output_pin = 18 # GPIO 18 for RHS MOTOR
 
+            pwm_output_pin = 18 # GPIO 18 for RHS MOTOR
             GPIO.setup(pwm_output_pin,GPIO.OUT)
-            self.pwm_sig = GPIO.PWM(pwm_output_pin,1000)	# creating a PWM object: GPIO.PWM(pin no, frequency)
+            self.pwm_sig = GPIO.PWM(pwm_output_pin,freq)	# creating a PWM object: GPIO.PWM(pin no, frequency)
             self.pwm_sig.start(0)
+
+            self.buttons_enable()
+            self.slider_reset()
 
         return
     
@@ -308,6 +326,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.STARTERLBL.setText("STARTER OFF")
         self.pwm_sig.stop()
         self.all_relays_off()
+        self.slider_reset()
 
         # turn resistor group off
         if self.resist_group.checkedButton() is not None:
@@ -324,9 +343,6 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
             self.power_group.setExclusive(True)  
 
         return
-
-
-
             
     def all_resistors_off(self):
         r7_pin.off()
@@ -356,6 +372,23 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         battneg_pin.off()
         return
 
+    def buttons_disable(self):
+        for button in self.power_group.buttons():
+            button.setEnabled(False)
+        
+        for button in self.resist_group.buttons():
+            button.setEnabled(False)
+
+    def buttons_enable(self):
+        for button in self.power_group.buttons():
+            button.setEnabled(True)
+
+        for button in self.resist_group.buttons():
+            button.setEnabled(True)
+
+    def slider_reset(self):
+        self.STARTGEN.setValue(0)
+        self.DUTYCYCLE_READOUT.display(0)
 
 
 
