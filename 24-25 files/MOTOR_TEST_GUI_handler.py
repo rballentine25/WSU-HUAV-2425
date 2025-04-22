@@ -14,11 +14,11 @@ import time
 import RPi.GPIO as GPIO
 from gpiozero import LED, PWMLED
 
-# file definition for the temp probe
+# file definition for the temp probe: reads updated temps from file every time
 base_directory = '/sys/bus/w1/devices/'
 dev_folder_list = glob.glob(base_directory + '28-*')
 
-# setting up spi for ADC
+# setting up spi (serial peripheral interface) for ADC
 spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
 cs = digitalio.DigitalInOut(board.D8)
 adc = MCP.MCP3008(spi, cs)
@@ -29,9 +29,7 @@ lock = threading.Lock()
 # DataFrame to store values of a and b
 df = pd.DataFrame(columns=["time","a", "b", "d"])
 
-# new_voltage = 0.0
-# temps_farenheit = [0]*3
-
+# defining all the relay pins for high/low signals(on/off)
 batt2load_pin = LED(0)
 gen2load_pin = LED(5)
 gen2batt_pin = LED(6)
@@ -46,15 +44,21 @@ r3_pin = LED(15)
 r2_pin = LED(23)
 r1_pin = LED(24)
 
-pwm_output_pin = 100
+# define the pwm pins for both motors
+# frequency for PWM calculated from capacitor/resistor used in low-pass circuit between Pi and motor controller
+pwm_output_LHS = 12 # S/G
+pwm_output_RHS = 18 # ICE
 freq = 2000
 
 
-
+##### SENSOR READING THREADS
 class tempReadingThread(QThread):
+    # signal object that "emits" a list object when triggered
     send_faren = pyqtSignal(list)
+    # defining list of temps (3 probes)
     temps_farenheit = [0]*3
 
+    # reading the values for each probe from the files
     def read_raw(self):
         num_files = len(dev_folder_list)
         data = []
@@ -65,34 +69,38 @@ class tempReadingThread(QThread):
         return data
 
 
+    # run method is what actually gets called when the thread is started
+    # this one uses an infinitie loop to keep checking the temp data
     def run(self):
-        #with lock:
-            while True:
-                data = self.read_raw()
-                # if the first line is not YES (data read correctly), wait 0.2s and try reading again.
-                # repeat until data is read correctgly
-                for i in range(len(data)):
-                    if "YES" in data[i][0]:
-                        start_index = data[i][1].find('t=') + 2
-                        raw_temp = data[i][1][start_index:]
-                        temp_cels = float(raw_temp) / freq      # file has temp in "millidegrees"
-                        temp_far = temp_cels * (9.0/5.0) + 32.0
-                        self.temps_farenheit[i] = temp_cels
-                        #temps_farenheit[i] = temp_cels
-                    else:
-                        continue
-                    
-                self.send_faren.emit(self.temps_farenheit)
-                time.sleep(2.5) 
+        while True:
+            data = self.read_raw()
+            # if the first line is not YES (data read correctly), wait 0.2s and try reading again.
+            # repeat until data is read correctgly
+            for i in range(len(data)):
+                if "YES" in data[i][0]:
+                    start_index = data[i][1].find('t=') + 2
+                    raw_temp = data[i][1][start_index:]
+                    temp_cels = float(raw_temp) / freq      # file has temp in "millidegrees"
+                    temp_far = temp_cels * (9.0/5.0) + 32.0
+                    self.temps_farenheit[i] = temp_cels
+                    #temps_farenheit[i] = temp_cels
+                else:
+                    continue
+            # sending the signal with the values to the method that updates the gui
+            self.send_faren.emit(self.temps_farenheit)
+            time.sleep(2.5) 
     
 
+# volt sensor reading thread
 class voltReadingThread(QThread):
     new_voltage = 0.0
+    # sends a float since only one value gets read
     send_volt = pyqtSignal(float)
 
     def run(self):
         #with lock:
             while True: 
+                # have to scale the raw voltage by factor of 5 since sensor can only read up to 5v
                 volt_chan = AnalogIn(adc, MCP.P2)
                 new_voltage = volt_chan.voltage
                 new_voltage = new_voltage*5
@@ -100,7 +108,7 @@ class voltReadingThread(QThread):
                 time.sleep(.5)
     
 
-
+# current reading thread
 class currReadingThread(QThread):
     new_curr = 0.0
     send_curr = pyqtSignal(float)
@@ -118,23 +126,15 @@ class currReadingThread(QThread):
 
 
 
+######### GUI INTERACTIONS 
 class MOTOR_TEST_GUI(QWidget, Ui_Form):
     # INITIALIZATION METHOD
     def __init__(self):
+        # calling super and initiationlization methods
         super().__init__()
         self.setupUi(self)  
 
-        GPIO.setmode(GPIO.BCM) #set pin numbering system to broadcom (GPIO)
-
-        # starter with sg control pin on
-        self.all_relays_off()   # make sure all relays are off to start
-        SGcontrol_pin.on()
-        pwm_output_pin = 19 # GPIO 19 for LHS motor
-        GPIO.setup(pwm_output_pin,GPIO.OUT)
-        self.pwm_sig = GPIO.PWM(pwm_output_pin,freq)	# creating a PWM object: GPIO.PWM(pin no, frequency)
-        self.pwm_sig.start(0)
-
-        # groupings
+        # GROUPINGS
         self.power_group = QButtonGroup(self)
         self.power_group.addButton(self.GEN2BATT)
         self.power_group.addButton(self.GEN2LOAD)
@@ -149,36 +149,53 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.resist_group.addButton(self.R6)
         self.resist_group.addButton(self.R7)
 
+        self.motor_group = QButtonGroup(self)
+        self.motor_group.setExclusive(True)
+        self.motor_group.addButton(self.STARTERBTN)
+        self.motor_group.addButton(self.ICEBTN)
+
+        # start with starter button checked, but nothing is on 
         self.STARTERBTN.setCheckable(True)
+        self.ICEBTN.setCheckable(True)
         self.STARTERBTN.setChecked(True)
+        self.ICEBTN.setChecked(False)
 
-        self.buttons_disable()
+        # CONNECTIONS
+        self.STARTGEN.sliderReleased.connect(self.dutcyc_released) # connect the slider to the pwm handler
+        self.STARTGEN.valueChanged.connect(self.duty_readout_changed) # connect the slider to the readout
 
+        # connect radio buttons to ccorresponding handler methods
+        self.power_group.buttonToggled.connect(self.power_btn_change)
+        self.resist_group.buttonToggled.connect(self.resist_btn_change)   
 
-        # connections
-        self.STARTGEN.sliderReleased.connect(self.dutcyc_released)
-        self.STARTGEN.valueChanged.connect(self.duty_readout_changed)
-        self.GEN2BATT.toggled.connect(lambda:self.power_btn_change(self.GEN2BATT))
-        self.GEN2LOAD.toggled.connect(lambda:self.power_btn_change(self.GEN2LOAD))
-        self.BATT2LOAD.toggled.connect(lambda:self.power_btn_change(self.BATT2LOAD))
-        self.STARTERBTN.toggled.connect(lambda:self.starter_btn_change(self.STARTERBTN))
-
+        # connect other buttons to corresponding methods
         self.RELAYSOFF.clicked.connect(self.relaysoff_clicked)
         self.RESISTORSOFF.clicked.connect(self.resistorsoff_clicked)
-
-        self.R7.toggled.connect(lambda:self.resist_btn_change(self.R7))
-        self.R6.toggled.connect(lambda:self.resist_btn_change(self.R6))
-        self.R5.toggled.connect(lambda:self.resist_btn_change(self.R5))
-        self.R4.toggled.connect(lambda:self.resist_btn_change(self.R4))
-        self.R3.toggled.connect(lambda:self.resist_btn_change(self.R3))
-        self.R2.toggled.connect(lambda:self.resist_btn_change(self.R2))
-        self.R1.toggled.connect(lambda:self.resist_btn_change(self.R1))        
+        self.SWITCHMOTOR.clicked.connect(self.switchmotors)
+        self.ONOFF.clicked.connect(self.turningon)            
     
+        # SETUP
+        # starting sensor reading threads
         self.start_sensor_threads()
+
+        #set pin numbering system to broadcom (GPIO). Using BCM since thats what PWM method needs
+        GPIO.setmode(GPIO.BCM) 
+
+        # set up pwm pins for both motors. RHS uses channel 0 and LHS uses channel 1
+        GPIO.setup(pwm_output_RHS, GPIO.OUT)
+        GPIO.setup(pwm_output_LHS, GPIO.OUT)
+        self.pwm_sig_RHS = GPIO.PWM(pwm_output_RHS, freq)
+        self.pwm_sig_LHS = GPIO.PWM(pwm_output_LHS, freq)
+
+        # make sure all radiobuttons are disabled and all relays are off
+        self.buttons_disable()
+        self.all_relays_off()
+
+        # NOTE: nothing should be on until the "turn on" button is pushed!
         return
 
-  
-
+  # SENSOR THREADS STARTING METHOD
+  # creates each thread and connects it to a method to update the GUI readouts
     def start_sensor_threads(self):
         self.temp_thread = tempReadingThread()
         self.volt_thread = voltReadingThread()
@@ -193,16 +210,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.curr_thread.start()
         return
 
-# EVENT HANDLERS
-    def dutcyc_released(self):
-        newvalue = self.STARTGEN.value()
-        self.pwm_sig.ChangeDutyCycle(newvalue)
-        return
-
-    def duty_readout_changed(self, newvalue):
-        self.DUTYCYCLE_READOUT.display(newvalue)
-        return
-
+# READOUT UPDATE METHODS: sensors and PWM slider
     def update_temp_readout(self, temps_farenheit):
         #with lock:
             self.TEMP_1.display(temps_farenheit[0])
@@ -219,6 +227,30 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         #with lock:
             self.CURRENT_READOUT.display(new_curr)
             return
+    
+    def duty_readout_changed(self, newvalue):
+        self.DUTYCYCLE_READOUT.display(newvalue)
+        return
+
+
+# EVENT HANDLERS
+    def turningon(self):
+        motors = self.check_motor_state()
+        if motors == 1:
+            SGcontrol_pin
+            self.pwm_sig_LHS.start(0)
+            self.buttons_disable()
+
+        pass
+
+
+    def dutcyc_released(self):
+        newvalue = self.STARTGEN.value()
+        self.pwm_sig.ChangeDutyCycle(newvalue)
+        return
+
+
+
 
     def power_btn_change(self, selected):
         if selected.isChecked() == True:
@@ -344,6 +376,32 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
 
         return
             
+
+    def slider_reset(self):
+        self.STARTGEN.setValue(0)
+        self.DUTYCYCLE_READOUT.display(0)
+        #grrrr
+
+
+
+# OTHER METHODS
+    # disable all GUI radio buttons (used when s/g is on)
+    def buttons_disable(self):
+        for button in self.power_group.buttons():
+            button.setEnabled(False)
+        
+        for button in self.resist_group.buttons():
+            button.setEnabled(False)
+
+    # enables all GUI radio buttons (used when ice is on)
+    def buttons_enable(self):
+        for button in self.power_group.buttons():
+            button.setEnabled(True)
+
+        for button in self.resist_group.buttons():
+            button.setEnabled(True)
+
+    # turn off the pin signals for all resistor relays
     def all_resistors_off(self):
         r7_pin.off()
         r6_pin.off()
@@ -352,9 +410,9 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         r3_pin.off()
         r2_pin.off()
         r1_pin.off()
-
         return
 
+    # turn off the pin signals for ALL relays
     def all_relays_off(self):
         r7_pin.off()
         r6_pin.off()
@@ -371,25 +429,20 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         SGcontrol_pin.off()
         battneg_pin.off()
         return
-
-    def buttons_disable(self):
-        for button in self.power_group.buttons():
-            button.setEnabled(False)
+    
+    # check the state of the motor ubttons: returns 1 for S/G (LHS) and 2 for ICE (RHS)
+    def check_motor_state(self):
+        checked = self.motor_group.checkedButton()
+        if checked == self.STARTERBTN:
+            return 1
+        elif checked == self.ICEBTN:
+            return 2
         
-        for button in self.resist_group.buttons():
-            button.setEnabled(False)
-
-    def buttons_enable(self):
-        for button in self.power_group.buttons():
-            button.setEnabled(True)
-
-        for button in self.resist_group.buttons():
-            button.setEnabled(True)
-
-    def slider_reset(self):
-        self.STARTGEN.setValue(0)
-        self.DUTYCYCLE_READOUT.display(0)
-        #grrrr
+    def sg_on(self):
+        self.pwm_output_RHS.stop()
+        self.all_relays_off()
+        SGcontrol_pin.on()
+        self.pwm_output_LHS.start(0)
 
 
 

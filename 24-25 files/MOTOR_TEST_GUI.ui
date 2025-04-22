@@ -98,9 +98,9 @@
   <widget class="QGroupBox" name="MODE">
    <property name="geometry">
     <rect>
-     <x>700</x>
+     <x>530</x>
      <y>170</y>
-     <width>171</width>
+     <width>341</width>
      <height>131</height>
     </rect>
    </property>
@@ -108,14 +108,17 @@
     <string notr="true">background-color: rgb(255, 255, 255);</string>
    </property>
    <property name="title">
-    <string>S/G MODE</string>
+    <string>MOTOR SELECT</string>
    </property>
    <widget class="QPushButton" name="STARTERBTN">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>20</x>
       <y>40</y>
-      <width>99</width>
+      <width>141</width>
       <height>30</height>
      </rect>
     </property>
@@ -131,28 +134,60 @@ background-color: darkgray
      <bool>true</bool>
     </property>
     <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="ICEBTN">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>40</y>
+      <width>141</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton:checked {
+background-color: darkgray
+}</string>
+    </property>
+    <property name="text">
+     <string>ICE EMULATOR</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="STARTERLBL">
+   <widget class="QPushButton" name="SWITCHMOTOR">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>20</x>
       <y>80</y>
-      <width>171</width>
+      <width>141</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>SWITCH</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="MOTORLABEL">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>80</y>
+      <width>141</width>
       <height>22</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-    <property name="layoutDirection">
-     <enum>Qt::LeftToRight</enum>
-    </property>
     <property name="text">
-     <string>STARTER ON</string>
+     <string>S/G (LHS) ON</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -502,7 +537,7 @@ selection-background-color: rgb(0, 170, 0);</string>
     <rect>
      <x>260</x>
      <y>170</y>
-     <width>421</width>
+     <width>251</width>
      <height>131</height>
     </rect>
    </property>
@@ -573,14 +608,14 @@ selection-background-color: rgb(0, 170, 0);</string>
      <x>260</x>
      <y>580</y>
      <width>611</width>
-     <height>101</height>
+     <height>141</height>
     </rect>
    </property>
    <property name="styleSheet">
     <string notr="true">background-color: rgb(255, 255, 255);</string>
    </property>
    <property name="title">
-    <string>OFF</string>
+    <string>ON/OFF</string>
    </property>
    <widget class="QPushButton" name="RELAYSOFF">
     <property name="geometry">
@@ -642,6 +677,25 @@ background-color: darkgray
     </property>
     <property name="checked">
      <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="ONOFF">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>90</y>
+      <width>171</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>TURN ON</string>
     </property>
    </widget>
   </widget>
