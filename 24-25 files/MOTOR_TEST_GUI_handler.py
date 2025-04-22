@@ -191,6 +191,9 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.buttons_disable()
         self.all_relays_off()
 
+        # keep track of whether turn on button has been pushed
+        self.turnedon = False
+
         # NOTE: nothing should be on until the "turn on" button is pushed!
         return
 
@@ -227,31 +230,44 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         #with lock:
             self.CURRENT_READOUT.display(new_curr)
             return
+
+
+# EVENT HANDLERS
+    # turn on (start)
+    def turningon(self):
+        motors = self.check_motor_state()
+        if motors == 1:
+            # sg_on method will make sure pwm for ice is off, then turn on/off appropriate relays,
+            # disable the other relay buttons, and start the pwm for the sg
+            self.sg_on()
+        elif motors == 2:
+            # ice_on method will make sure pwm for sg is off, then turn on/off appropriate relays, 
+            # enable the other relay buttons, and start the pwm for the ice
+            self.ice_on()
+
+        self.turnedon = True
+        self.ONOFF.setEnabled(False)
+
+        # NOTE: could disable this until all relays off is clicked, then reenable
+        return 
+
+    # changing current duty cycle when slider is released
+    def dutcyc_released(self):
+        if self.turnedon == True:
+            newvalue = self.STARTGEN.value()
+            if self.check_motor_state() == 1: #starter, LHS
+                self.pwm_sig_LHS.changeDutyCycle(newvalue)
+            elif self.check_motor_state() == 2: # ice, RHS
+                self.pwm_sig_RHS.changeDutyCycle(newvalue)
+                
+        return
     
+    # updating duty cycle readout as the slider is moved
     def duty_readout_changed(self, newvalue):
         self.DUTYCYCLE_READOUT.display(newvalue)
         return
 
-
-# EVENT HANDLERS
-    def turningon(self):
-        motors = self.check_motor_state()
-        if motors == 1:
-            SGcontrol_pin
-            self.pwm_sig_LHS.start(0)
-            self.buttons_disable()
-
-        pass
-
-
-    def dutcyc_released(self):
-        newvalue = self.STARTGEN.value()
-        self.pwm_sig.ChangeDutyCycle(newvalue)
-        return
-
-
-
-
+    # turning relay pins on and off as power button selection is made
     def power_btn_change(self, selected):
         if selected.isChecked() == True:
             if selected.text() == "GENERATOR TO BATTERY":
@@ -275,40 +291,8 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
                 batt2load_pin.on()
                 battneg_pin.on()
         return
-
-    def starter_btn_change(self, starterbtn):
-        if starterbtn.isChecked() == True:
-            self.pwm_sig.stop()
-
-            self.all_relays_off()
-            SGcontrol_pin.on()
-            self.STARTERLBL.setText("STARTER ON")
-            
-            pwm_output_pin = 19 # GPIO 19 for LHS MOTOR
-            GPIO.setup(pwm_output_pin,GPIO.OUT)
-            self.pwm_sig = GPIO.PWM(pwm_output_pin,freq)	# creating a PWM object: GPIO.PWM(pin no, frequency)
-            self.pwm_sig.start(0)
-
-            self.buttons_disable()
-            self.slider_reset()
-
-        else:
-            self.pwm_sig.stop()
-
-            self.all_relays_off()
-            pwr2MC_pin.on()
-            self.STARTERLBL.setText("STARTER OFF")
-
-            pwm_output_pin = 18 # GPIO 18 for RHS MOTOR
-            GPIO.setup(pwm_output_pin,GPIO.OUT)
-            self.pwm_sig = GPIO.PWM(pwm_output_pin,freq)	# creating a PWM object: GPIO.PWM(pin no, frequency)
-            self.pwm_sig.start(0)
-
-            self.buttons_enable()
-            self.slider_reset()
-
-        return
     
+    # turning relay pins on and off as resistor button selection is made
     def resist_btn_change(self, selected):
         if selected.isChecked() == True:
             if selected.text() == "Resistor 7 (HIGH)":
@@ -342,6 +326,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         return
 
 
+    # resistors off button: turn all resistors off
     def resistorsoff_clicked(self):
         self.all_resistors_off()
         if self.resist_group.checkedButton() is not None:
@@ -352,13 +337,14 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
             self.resist_group.setExclusive(True)
         return
 
+    # turns ALL relays off. also stops both pwm signals and resets the slider. 
+    # turn_on button will have to be pressed again to turn the pwm signals back on
     def relaysoff_clicked(self):
-
-        self.STARTERBTN.setChecked(False)
-        self.STARTERLBL.setText("STARTER OFF")
-        self.pwm_sig.stop()
+        # turn all the relays off and reset the slider. slider method will turn pwm signals off
         self.all_relays_off()
         self.slider_reset()
+        self.turnedon = False
+        self.ONOFF.setEnabled(True)
 
         # turn resistor group off
         if self.resist_group.checkedButton() is not None:
@@ -373,16 +359,33 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
             for button in self.power_group.buttons():
                 button.setChecked(False)
             self.power_group.setExclusive(True)  
-
-        return
-            
+        return     
 
     def slider_reset(self):
+        # turn both pwm signals off (doesn't matter which is on)
+        self.pwm_sig_LHS.stop()
+        self.pwm_sig_RHS.stop()
+
+        # reset the slider and the readout
+        # temp block signals from slider while setting value so that dutcycle_released() method isn't called
+        self.STARTGEN.blockSignals(True)
         self.STARTGEN.setValue(0)
+        self.STARTGEN.blockSignals(False)
         self.DUTYCYCLE_READOUT.display(0)
-        #grrrr
+        return 
 
+    def switchmotors(self):
+        motor_state = self.motor_group.checkedButton()
+        if motor_state == self.STARTERBTN:
+            self.ICEBTN.setChecked(True)
+            if self.turnedon == True:
+                self.ice_on()
+        else:
+            self.STARTERBTN.setChecked(True)
+            if self.turnedon == True:
+                self.sg_on()
 
+        return
 
 # OTHER METHODS
     # disable all GUI radio buttons (used when s/g is on)
@@ -438,11 +441,34 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         elif checked == self.ICEBTN:
             return 2
         
+    # turn on the s/g motor
     def sg_on(self):
+        # if pwm signal for other motor was on, stop it
         self.pwm_output_RHS.stop()
+
+        # turn off all relays, then turn on just the sg pin
         self.all_relays_off()
         SGcontrol_pin.on()
+
+        # start the sg motor pwm signal
         self.pwm_output_LHS.start(0)
+
+        # disable the other relay buttons
+        self.buttons_disable()
+        return
+    
+    def ice_on(self):
+        # if pwm signal for other motor was on, stop it
+        self.pwm_output_LHS.stop()
+        SGcontrol_pin.off()
+
+        # turn on the 48v to MC pin and the pwm signal 
+        pwr2MC_pin.on()
+        self.pwm_output_RHS.start(0)
+
+        # turn on the other relay buttons
+        self.buttons_enable()
+        return
 
 
 
