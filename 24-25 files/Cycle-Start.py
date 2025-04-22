@@ -13,14 +13,180 @@ res3 = LED(15)
 res4 = LED(14)
 res5 = LED(22)
 res6 = LED(27)
+res7 = LED(17)
 sgcontrol = LED(20)
+gentobatt = LED(6)
+batttoload = LED(0)
+battneg = LED(21)
 
-gentoload.on()
-MCpwr.on()
-res6.on()
-sgcontrol.on()
+start_pin = 18		
+ICE_pin = 19  
 
-outpin = 18		       
+GPIO.setwarnings(False)			
+GPIO.setmode(GPIO.BCM)		    
+GPIO.setup(ICE_pin,GPIO.OUT)
+
+ICE_pwm = GPIO.PWM(ICE_pin,2000)	
+ICE_pwm.start(0)  
+
+GPIO.setwarnings(False)			
+GPIO.setmode(GPIO.BCM)		    
+GPIO.setup(start_pin,GPIO.OUT)
+
+SG_pwm = GPIO.PWM(ICE_pin,2000)	
+SG_pwm.start(0)  
+
+df = pd.read_excel('your_file.xlsx')
+
+length = df.shape[0]
+df.columns = ['Realtive Time', 'Power Level', 'Mode of Opperation']     
+
+for k in range(0,length,1):
+    mode = df.iloc[k,2]
+    load = df.iloc[k,1]
+
+    if mode == 0:
+        gentoload.off()
+        MCpwr.off()
+        sgcontrol.off()
+        gentobatt.off()
+        batttoload.on()
+        battneg.on()
+        
+        
+    elif mode == 1:
+        sgcontrol.off()
+        gentobatt.off()
+        batttoload.off()
+        battneg.off()
+        gentoload.on()
+        MCpwr.on()
+
+        if mode != df.iloc[k-1,2]:
+            ICE_pwm.ChangeDutyCycle(100)
+
+        if load == 7:
+            res2.off()
+            res3.off()
+            res4.off()
+            res5.off()
+            res6.off()
+            res7.off()
+            res1.on()
+        elif load == 6:
+            res1.off()
+            res3.off()
+            res4.off()
+            res5.off()
+            res6.off()
+            res7.off()
+            res2.on()
+        elif load == 5:
+            res1.off()
+            res2.off()
+            res4.off()
+            res5.off()
+            res6.off()
+            res7.off()
+            res3.on()
+        elif load == 4:
+            res1.off()
+            res2.off()
+            res3.off()
+            res5.off()
+            res6.off()
+            res7.off()
+            res4.on()
+        elif load == 3:
+            res1.off()
+            res2.off()
+            res3.off()
+            res4.off()
+            res6.off()
+            res7.off()
+            res5.on()
+        elif load == 2:
+            res1.off()
+            res2.off()
+            res3.off()
+            res4.off()
+            res5.off()
+            res7.off()
+            res6.on()
+        elif load == 1:
+            res1.off()
+            res2.off()
+            res3.off()
+            res4.off()
+            res5.off()
+            res6.off()
+            res7.on()
+        else:
+            print('Load outside avalible range')
+    elif mode == 2:
+        a = 1
+    else:
+        print('mode outside avaible modes')
+    if load == 7:
+        res2.off()
+        res3.off()
+        res4.off()
+        res5.off()
+        res6.off()
+        res7.off()
+        res1.on()
+    elif load == 6:
+        res1.off()
+        res3.off()
+        res4.off()
+        res5.off()
+        res6.off()
+        res7.off()
+        res2.on()
+    elif load == 5:
+        res1.off()
+        res2.off()
+        res4.off()
+        res5.off()
+        res6.off()
+        res7.off()
+        res3.on()
+    elif load == 4:
+        res1.off()
+        res2.off()
+        res3.off()
+        res5.off()
+        res6.off()
+        res7.off()
+        res4.on()
+    elif load == 3:
+        res1.off()
+        res2.off()
+        res3.off()
+        res4.off()
+        res6.off()
+        res7.off()
+        res5.on()
+    elif load == 2:
+        res1.off()
+        res2.off()
+        res3.off()
+        res4.off()
+        res5.off()
+        res7.off()
+        res6.on()
+    elif load == 1:
+        res1.off()
+        res2.off()
+        res3.off()
+        res4.off()
+        res5.off()
+        res6.off()
+        res7.on()
+    else:
+        print('Load outside avalible range')
+            
+    sleep(0.5)
 
 GPIO.setwarnings(False)			
 GPIO.setmode(GPIO.BCM)		    
@@ -46,10 +212,5 @@ while True:
     break
 
 pi_pwm.stop()      
-
-gentoload.off()
-MCpwr.off()
-res6.off()
-sgcontrol.off()
 
 GPIO.cleanup()       

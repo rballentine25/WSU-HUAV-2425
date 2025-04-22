@@ -11,17 +11,17 @@ from gpiozero import LED, PWMLED
 
 
 # identifying pins
-# gentoload = LED(5)
-# MCpwr = LED(16)
-# res6 = LED(27)
-sgcontrol = LED(20)
+gentoload = LED(5)
+MCpwr = LED(16)
+res6 = LED(27)
+#sgcontrol = LED(20)
 
-# gentoload.on()
-# MCpwr.on()
-# res6.on()
-sgcontrol.on()
+gentoload.on()
+MCpwr.on()
+res6.on()
+#sgcontrol.on()
 
-# output pin for the PWM signal: should be either 18 (RHS) or 19 (LHS)
+# output pin for the PWM signal: should be either 18 (RHS, S/G) or 12 (LHS, ICE)
 outpin = 18		       
 
 GPIO.setwarnings(False)			#disable warnings
@@ -73,9 +73,9 @@ while True:
 pi_pwm.stop()      
 
 # turning off relays
-# gentoload.off()
-# MCpwr.off()
-# res6.off()
-sgcontrol.off()
+gentoload.off()
+MCpwr.off()
+res6.off()
+#sgcontrol.off()
 
 GPIO.cleanup()       
