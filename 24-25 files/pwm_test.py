@@ -14,15 +14,15 @@ from gpiozero import LED, PWMLED
 gentoload = LED(5)
 MCpwr = LED(16)
 res6 = LED(27)
-#sgcontrol = LED(20)
+sgcontrol = LED(20)
 
 gentoload.on()
 MCpwr.on()
 res6.on()
-#sgcontrol.on()
+sgcontrol.on()
 
 # output pin for the PWM signal: should be either 18 (RHS, S/G) or 12 (LHS, ICE)
-outpin = 18		       
+outpin = 12		       
 
 GPIO.setwarnings(False)			#disable warnings
 GPIO.setmode(GPIO.BCM)		    #set pin numbering system to broadcom (GPIO)
@@ -76,6 +76,6 @@ pi_pwm.stop()
 gentoload.off()
 MCpwr.off()
 res6.off()
-#sgcontrol.off()
+sgcontrol.off()
 
 GPIO.cleanup()       

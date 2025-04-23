@@ -256,9 +256,9 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         if self.turnedon == True:
             newvalue = self.STARTGEN.value()
             if self.check_motor_state() == 1: #starter, LHS
-                self.pwm_sig_LHS.changeDutyCycle(newvalue)
+                self.pwm_sig_LHS.ChangeDutyCycle(newvalue)
             elif self.check_motor_state() == 2: # ice, RHS
-                self.pwm_sig_RHS.changeDutyCycle(newvalue)
+                self.pwm_sig_RHS.ChangeDutyCycle(newvalue)
                 
         return
     
@@ -375,6 +375,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         return 
 
     def switchmotors(self):
+        self.slider_reset()
         motor_state = self.motor_group.checkedButton()
         if motor_state == self.STARTERBTN:
             self.ICEBTN.setChecked(True)
@@ -444,14 +445,14 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     # turn on the s/g motor
     def sg_on(self):
         # if pwm signal for other motor was on, stop it
-        self.pwm_output_RHS.stop()
+        self.pwm_sig_RHS.stop()
 
         # turn off all relays, then turn on just the sg pin
         self.all_relays_off()
         SGcontrol_pin.on()
 
         # start the sg motor pwm signal
-        self.pwm_output_LHS.start(0)
+        self.pwm_sig_LHS.start(0)
 
         # disable the other relay buttons
         self.buttons_disable()
@@ -459,12 +460,12 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     
     def ice_on(self):
         # if pwm signal for other motor was on, stop it
-        self.pwm_output_LHS.stop()
+        self.pwm_sig_LHS.stop()
         SGcontrol_pin.off()
 
         # turn on the 48v to MC pin and the pwm signal 
         pwr2MC_pin.on()
-        self.pwm_output_RHS.start(0)
+        self.pwm_sig_RHS.start(0)
 
         # turn on the other relay buttons
         self.buttons_enable()

@@ -33,7 +33,7 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)		    
 GPIO.setup(start_pin,GPIO.OUT)
 
-SG_pwm = GPIO.PWM(ICE_pin,2000)	
+SG_pwm = GPIO.PWM(start_pin,2000)	
 SG_pwm.start(0)  
 
 df = pd.read_excel('your_file.xlsx')
@@ -65,68 +65,11 @@ for k in range(0,length,1):
         if mode != df.iloc[k-1,2]:
             ICE_pwm.ChangeDutyCycle(100)
 
-        if load == 7:
-            res2.off()
-            res3.off()
-            res4.off()
-            res5.off()
-            res6.off()
-            res7.off()
-            res1.on()
-        elif load == 6:
-            res1.off()
-            res3.off()
-            res4.off()
-            res5.off()
-            res6.off()
-            res7.off()
-            res2.on()
-        elif load == 5:
-            res1.off()
-            res2.off()
-            res4.off()
-            res5.off()
-            res6.off()
-            res7.off()
-            res3.on()
-        elif load == 4:
-            res1.off()
-            res2.off()
-            res3.off()
-            res5.off()
-            res6.off()
-            res7.off()
-            res4.on()
-        elif load == 3:
-            res1.off()
-            res2.off()
-            res3.off()
-            res4.off()
-            res6.off()
-            res7.off()
-            res5.on()
-        elif load == 2:
-            res1.off()
-            res2.off()
-            res3.off()
-            res4.off()
-            res5.off()
-            res7.off()
-            res6.on()
-        elif load == 1:
-            res1.off()
-            res2.off()
-            res3.off()
-            res4.off()
-            res5.off()
-            res6.off()
-            res7.on()
-        else:
-            print('Load outside avalible range')
     elif mode == 2:
         a = 1
     else:
         print('mode outside avaible modes')
+
     if load == 7:
         res2.off()
         res3.off()
