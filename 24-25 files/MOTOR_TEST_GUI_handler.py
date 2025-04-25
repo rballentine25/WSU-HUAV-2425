@@ -161,8 +161,10 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.ICEBTN.setChecked(False)
 
         # CONNECTIONS
-        self.STARTGEN.sliderReleased.connect(self.dutcyc_released) # connect the slider to the pwm handler
-        self.STARTGEN.valueChanged.connect(self.duty_readout_changed) # connect the slider to the readout
+        self.MOTORSLIDER.sliderReleased.connect(self.dutcyc_released) # connect the slider to the pwm handler
+        self.MOTORSLIDER.valueChanged.connect(self.duty_readout_changed) # connect the slider to the readout
+        self.power_group.buttonClicked.connect(self.enableSlider)
+        self.resist_group.buttonClicked.connect(self.enableSlider)
 
         # connect radio buttons to ccorresponding handler methods
         self.power_group.buttonToggled.connect(self.power_btn_change)
@@ -195,6 +197,8 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
         self.turnedon = False
 
         # NOTE: nothing should be on until the "turn on" button is pushed!
+        self.MOTORSLIDER.setEnabled(False)
+
         return
 
   # SENSOR THREADS STARTING METHOD
@@ -235,11 +239,13 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
 # EVENT HANDLERS
     # turn on (start)
     def turningon(self):
+        self.slider_reset()
         motors = self.check_motor_state()
         if motors == 1:
             # sg_on method will make sure pwm for ice is off, then turn on/off appropriate relays,
             # disable the other relay buttons, and start the pwm for the sg
             self.sg_on()
+            self.MOTORSLIDER.setEnabled(True)
         elif motors == 2:
             # ice_on method will make sure pwm for sg is off, then turn on/off appropriate relays, 
             # enable the other relay buttons, and start the pwm for the ice
@@ -254,7 +260,7 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
     # changing current duty cycle when slider is released
     def dutcyc_released(self):
         if self.turnedon == True:
-            newvalue = self.STARTGEN.value()
+            newvalue = self.MOTORSLIDER.value()
             if self.check_motor_state() == 1: #starter, LHS
                 self.pwm_sig_LHS.ChangeDutyCycle(newvalue)
             elif self.check_motor_state() == 2: # ice, RHS
@@ -368,22 +374,43 @@ class MOTOR_TEST_GUI(QWidget, Ui_Form):
 
         # reset the slider and the readout
         # temp block signals from slider while setting value so that dutcycle_released() method isn't called
-        self.STARTGEN.blockSignals(True)
-        self.STARTGEN.setValue(0)
-        self.STARTGEN.blockSignals(False)
+        self.MOTORSLIDER.blockSignals(True)
+        self.MOTORSLIDER.setValue(0)
+        self.MOTORSLIDER.blockSignals(False)
         self.DUTYCYCLE_READOUT.display(0)
         return 
+    
+    def enableSlider(self):
+        if self.power_group.checkedButton() and self.resist_group.checkedButton():
+            self.MOTORSLIDER.setEnabled(True)
+
+        return
 
     def switchmotors(self):
         self.slider_reset()
+        
+        # turning off all the power/resistor group relays and buttons
+        self.all_relays_off()
+        self.resistorsoff_clicked()
+        if self.power_group.checkedButton() is not None:
+            self.power_group.setExclusive(False)
+            for button in self.power_group.buttons():
+                button.setChecked(False)
+            self.power_group.setExclusive(True)
+
+        # check motor state: if currently on start, then switch to ice and vice versa
         motor_state = self.motor_group.checkedButton()
         if motor_state == self.STARTERBTN:
             self.ICEBTN.setChecked(True)
+            self.MOTORLABEL.setText("ICE (RHS) ON")
             if self.turnedon == True:
                 self.ice_on()
+                self.MOTORSLIDER.setEnabled(False)
         else:
             self.STARTERBTN.setChecked(True)
+            self.MOTORLABEL.setText("S/G (LHS) ON")
             if self.turnedon == True:
+                self.MOTORSLIDER.setEnabled(True)
                 self.sg_on()
 
         return

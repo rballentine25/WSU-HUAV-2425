@@ -16,7 +16,7 @@ MCpwr = LED(16)
 res6 = LED(27)
 sgcontrol = LED(20)
 
-gentoload.on()
+# gentoload.on()
 MCpwr.on()
 res6.on()
 sgcontrol.on()
@@ -29,8 +29,8 @@ GPIO.setmode(GPIO.BCM)		    #set pin numbering system to broadcom (GPIO)
 GPIO.setup(outpin,GPIO.OUT)
 
 # creating a PWM object: GPIO.PWM(pin no, frequency)
-# frequency was whatever was already in the elctronicwings code
-pi_pwm = GPIO.PWM(outpin,2000)	
+# frequency was whatever was already in the elctronicwings code		
+pi_pwm = GPIO.PWM(outpin,1000)		
 pi_pwm.start(0)  
 
 #start PWM 
@@ -73,9 +73,9 @@ while True:
 pi_pwm.stop()      
 
 # turning off relays
-gentoload.off()
+# gentoload.off()
 MCpwr.off()
 res6.off()
 sgcontrol.off()
 
-GPIO.cleanup()       
+#GPIO.cleanup()       
