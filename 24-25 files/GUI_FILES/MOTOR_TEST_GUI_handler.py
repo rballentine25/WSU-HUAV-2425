@@ -48,7 +48,7 @@ r1_pin = LED(24)
 # frequency for PWM calculated from capacitor/resistor used in low-pass circuit between Pi and motor controller
 pwm_output_LHS = 12 # S/G
 pwm_output_RHS = 18 # ICE
-freq = 2000
+freq = 2000  
 
 
 ##### SENSOR READING THREADS
